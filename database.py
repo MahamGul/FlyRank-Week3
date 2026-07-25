@@ -69,3 +69,24 @@ def get_task_by_id(task_id):
         return dict(row)
 
     return None
+
+def create_task(title):
+    conn = get_connection()
+
+    cursor = conn.execute(
+        "INSERT INTO tasks (title, done) VALUES (?, ?)",
+        (title, False)
+    )
+
+    conn.commit()
+
+    task_id = cursor.lastrowid
+
+    row = conn.execute(
+        "SELECT * FROM tasks WHERE id = ?",
+        (task_id,)
+    ).fetchone()
+
+    conn.close()
+
+    return dict(row)
