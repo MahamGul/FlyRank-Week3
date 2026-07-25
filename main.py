@@ -10,14 +10,14 @@ app = FastAPI(
 )
 @app.get(
     "/tasks",
-    summary="Get all tasks"
+    summary="Get all Tasks"
 )
 def get_tasks():
     return get_all_tasks()
 
 @app.get(
     "/tasks/{task_id}",
-    summary="Get a task by ID"
+    summary="Get a Task by ID"
 )
 def get_task(task_id: int):
 
