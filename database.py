@@ -90,3 +90,66 @@ def create_task(title):
     conn.close()
 
     return dict(row)
+
+def update_task(task_id, title=None, done=None):
+    conn = get_connection()
+
+    row = conn.execute(
+        "SELECT * FROM tasks WHERE id = ?",
+        (task_id,)
+    ).fetchone()
+
+    if not row:
+        conn.close()
+        return None
+
+    current_title = row["title"]
+    current_done = row["done"]
+
+    if title is not None:
+        current_title = title
+
+    if done is not None:
+        current_done = done
+
+    conn.execute(
+        """
+        UPDATE tasks
+        SET title = ?, done = ?
+        WHERE id = ?
+        """,
+        (current_title, current_done, task_id)
+    )
+
+    conn.commit()
+
+    updated_row = conn.execute(
+        "SELECT * FROM tasks WHERE id = ?",
+        (task_id,)
+    ).fetchone()
+
+    conn.close()
+
+    return dict(updated_row)
+
+def delete_task(task_id):
+    conn = get_connection()
+
+    row = conn.execute(
+        "SELECT * FROM tasks WHERE id = ?",
+        (task_id,)
+    ).fetchone()
+
+    if not row:
+        conn.close()
+        return False
+
+    conn.execute(
+        "DELETE FROM tasks WHERE id = ?",
+        (task_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return True

@@ -3,12 +3,16 @@ from database import (
     seed_data,
     get_all_tasks,
     get_task_by_id,
-    create_task
+    create_task,
+    update_task,
+    delete_task
 )
 from pydantic import BaseModel
 from typing import Optional
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from fastapi import Response
+
 init_db()
 seed_data()
 app = FastAPI(
@@ -62,3 +66,61 @@ def add_task(task: TaskCreate):
         )
 
     return create_task(task.title)
+
+class TaskUpdate(BaseModel):
+    title: Optional[str] = None
+    done: Optional[bool] = None
+
+@app.put(
+    "/tasks/{task_id}",
+    summary="Update a task"
+)
+def update_task_endpoint(task_id: int, updated_data: TaskUpdate):
+
+    if (
+        updated_data.title is None
+        and updated_data.done is None
+    ):
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Request body cannot be empty"}
+        )
+
+    if (
+        updated_data.title is not None
+        and not updated_data.title.strip()
+    ):
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Title cannot be empty"}
+        )
+
+    updated_task = update_task(
+        task_id,
+        updated_data.title,
+        updated_data.done
+    )
+
+    if updated_task is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": f"Task {task_id} not found"}
+        )
+
+    return updated_task
+
+@app.delete(
+    "/tasks/{task_id}",
+    summary="Delete a task"
+)
+def delete_task_endpoint(task_id: int):
+
+    deleted = delete_task(task_id)
+
+    if not deleted:
+        return JSONResponse(
+            status_code=404,
+            content={"error": f"Task {task_id} not found"}
+        )
+
+    return Response(status_code=204)
