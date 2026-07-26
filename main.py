@@ -1,12 +1,6 @@
-from database import (
-    init_db,
-    seed_data,
-    get_all_tasks,
-    get_task_by_id,
-    create_task,
-    update_task,
-    delete_task
-)
+from database import init_db, seed_data
+from repositories.sqlite_repository import SQLiteTaskRepository
+
 from pydantic import BaseModel
 from typing import Optional
 from fastapi import FastAPI
@@ -15,6 +9,7 @@ from fastapi import Response
 
 init_db()
 seed_data()
+repository = SQLiteTaskRepository()
 app = FastAPI(
     title="Task API",
     description="A simple CRUD API for managing tasks.",
@@ -25,7 +20,7 @@ app = FastAPI(
     summary="Get all Tasks"
 )
 def get_tasks():
-    return get_all_tasks()
+    return repository.get_all_tasks()
 
 @app.get(
     "/tasks/{task_id}",
@@ -33,7 +28,7 @@ def get_tasks():
 )
 def get_task(task_id: int):
 
-    task = get_task_by_id(task_id)
+    task = repository.get_task_by_id(task_id)
 
     if task:
         return task
@@ -65,7 +60,7 @@ def add_task(task: TaskCreate):
             content={"error": "Title cannot be empty"}
         )
 
-    return create_task(task.title)
+    return repository.create_task(task.title)
 
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
@@ -95,7 +90,7 @@ def update_task_endpoint(task_id: int, updated_data: TaskUpdate):
             content={"error": "Title cannot be empty"}
         )
 
-    updated_task = update_task(
+    updated_task = repository.update_task(
         task_id,
         updated_data.title,
         updated_data.done
@@ -115,7 +110,7 @@ def update_task_endpoint(task_id: int, updated_data: TaskUpdate):
 )
 def delete_task_endpoint(task_id: int):
 
-    deleted = delete_task(task_id)
+    deleted = repository.delete_task(task_id)
 
     if not deleted:
         return JSONResponse(
