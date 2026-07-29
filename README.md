@@ -1,125 +1,105 @@
-# Task API with SQLite
+# Task API with FastAPI, PostgreSQL, and Docker
 
-A simple CRUD API built with FastAPI and SQLite.
-
-## Why SQLite?
-
-SQLite was chosen because:
-
-- It requires no separate database server
-- It is lightweight and easy to set up
-- The entire database is stored in a single file
-- It is perfect for small projects and learning backend development
-
-## Database Location
-
-The SQLite database is stored as:
-
-```text
-tasks.db
-```
-
-inside the project root directory.
-
-The database and table are automatically created when the application starts.
-
-## Project Setup
-
-### 1. Clone the repository
-
-```bash
-git clone <your-repository-url>
-cd FlyRank-Week3
-```
-
-### 2. Create a virtual environment
-
-```bash
-python -m venv venv
-```
-
-### 3. Activate the virtual environment
-
-Windows PowerShell:
-
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-### 4. Install dependencies
-
-```bash
-pip install fastapi uvicorn
-```
-
-### 5. Start the application
-
-```bash
-uvicorn main:app --reload
-```
-
-The API will be available at:
-
-```text
-http://127.0.0.1:8000
-```
-
-Interactive API documentation:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
-## Automatic Database Creation
-
-When the application starts:
-
-- `tasks.db` is created automatically if it does not exist
-- The `tasks` table is created automatically
-- Example tasks are inserted only when the table is empty
-
-## Example SQL Query
-
-The following query was executed during Stage 4:
-
-```sql
-SELECT * FROM tasks WHERE done = 1;
-```
-
-This returns all completed tasks.
-
-## Database Viewer Screenshot
-
-Insert a screenshot of DB Browser for SQLite here.
-
-Example:
-
-![SQLite Viewer](images/sqlite-viewer.png)
+A simple CRUD Task API built with FastAPI and PostgreSQL, fully containerized using Docker and Docker Compose.
 
 ## Features
 
-- Create tasks
-- Read tasks
-- Update tasks
-- Delete tasks
-- Persistent storage using SQLite
-- Automatic database initialization
+* Create tasks
+* Read tasks
+* Update tasks
+* Delete tasks
+* PostgreSQL database persistence
+* Dockerized application stack
+* Environment-based configuration using `.env`
+* Automatic database initialization
+* Connection retry logic for container startup
 
+## Tech Stack
 
+* FastAPI
+* PostgreSQL
+* Docker
+* Docker Compose
+* Python
 
-## Data Persistence Verification
+## Project Setup
 
-The application uses a named Docker volume (`postgres_data`) for PostgreSQL storage.
+### 1. Clone the Repository
 
-### Test Procedure
+```bash
+git clone <repository-url>
+cd FlyRank-Week3
+```
 
-1. Started the application:
+### 2. Create Environment File
+
+Copy the example file:
+
+```bash
+cp .env.example .env
+```
+
+Example configuration:
+
+```env
+DATABASE_URL=postgresql://postgres:postgres@db:5432/tasksdb
+```
+
+### 3. Start the Application
 
 ```bash
 docker compose up --build
 ```
 
-2. Created a new task:
+This starts:
+
+* FastAPI application
+* PostgreSQL database
+
+### 4. Access the API
+
+API:
+
+```text
+http://localhost:8000
+```
+
+Swagger Documentation:
+
+```text
+http://localhost:8000/docs
+```
+
+## Database Configuration
+
+PostgreSQL runs inside Docker and is configured through Docker Compose.
+
+The application connects using:
+
+```env
+DATABASE_URL=postgresql://postgres:postgres@db:5432/tasksdb
+```
+
+A named Docker volume is used for persistent storage:
+
+```yaml
+volumes:
+  postgres_data:
+```
+
+## Data Persistence Verification
+
+The application uses a named Docker volume (`postgres_data`) to preserve PostgreSQL data between container restarts.
+
+### Test Procedure
+
+1. Start the application:
+
+```bash
+docker compose up --build
+```
+
+2. Create a new task:
 
 ```bash
 curl -X POST http://localhost:8000/tasks \
@@ -133,19 +113,19 @@ Response:
 {"id":4,"title":"Persistence Test","done":false}
 ```
 
-3. Stopped the containers:
+3. Stop the containers:
 
 ```bash
 docker compose down
 ```
 
-4. Restarted the containers:
+4. Restart the containers:
 
 ```bash
 docker compose up --build
 ```
 
-5. Retrieved all tasks:
+5. Retrieve all tasks:
 
 ```bash
 curl http://localhost:8000/tasks
@@ -162,18 +142,17 @@ Result:
 ]
 ```
 
-The task created before the restart remained in the database after the containers were recreated, confirming that PostgreSQL data persistence is working through the Docker volume.
+The task remained available after the containers were restarted, confirming successful PostgreSQL persistence through the Docker volume.
 
-## Repository Update
+## Architecture Update
 
-The original repository was replaced with a clean FastAPI CRUD implementation using PostgreSQL and Docker.
+The original storage implementation was replaced with a PostgreSQL repository while keeping the existing service and API layers unchanged.
 
-Key updates include:
+Additional improvements include:
 
-* FastAPI REST API implementation.
-* PostgreSQL database running in Docker.
-* Docker Compose orchestration for application and database services.
-* Automatic database initialization and seed data.
-* Database connection retry logic to handle container startup order.
-* Persistent PostgreSQL storage using a named Docker volume.
-* Environment-variable-based configuration using `.env`.
+* PostgreSQL integration
+* Docker Compose orchestration
+* Connection retry logic
+* Environment-based configuration
+* Persistent Docker volume storage
+* Repository pattern implementation
