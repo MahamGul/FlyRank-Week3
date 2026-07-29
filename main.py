@@ -1,6 +1,5 @@
 from database import init_db, seed_data
-from repositories.sqlite_repository import SQLiteTaskRepository
-
+from repositories.postgres_repository import PostgresTaskRepository
 from pydantic import BaseModel
 from typing import Optional
 from fastapi import FastAPI
@@ -9,7 +8,7 @@ from fastapi import Response
 
 init_db()
 seed_data()
-repository = SQLiteTaskRepository()
+repository = PostgresTaskRepository()
 app = FastAPI(
     title="Task API",
     description="A simple CRUD API for managing tasks.",
