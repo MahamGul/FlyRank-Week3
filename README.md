@@ -104,3 +104,76 @@ Example:
 - Delete tasks
 - Persistent storage using SQLite
 - Automatic database initialization
+
+
+
+## Data Persistence Verification
+
+The application uses a named Docker volume (`postgres_data`) for PostgreSQL storage.
+
+### Test Procedure
+
+1. Started the application:
+
+```bash
+docker compose up --build
+```
+
+2. Created a new task:
+
+```bash
+curl -X POST http://localhost:8000/tasks \
+-H "Content-Type: application/json" \
+-d '{"title":"Persistence Test"}'
+```
+
+Response:
+
+```json
+{"id":4,"title":"Persistence Test","done":false}
+```
+
+3. Stopped the containers:
+
+```bash
+docker compose down
+```
+
+4. Restarted the containers:
+
+```bash
+docker compose up --build
+```
+
+5. Retrieved all tasks:
+
+```bash
+curl http://localhost:8000/tasks
+```
+
+Result:
+
+```json
+[
+  {"id":1,"title":"Learn FastAPI","done":false},
+  {"id":2,"title":"Build CRUD API","done":true},
+  {"id":3,"title":"Connect PostgreSQL","done":false},
+  {"id":4,"title":"Persistence Test","done":false}
+]
+```
+
+The task created before the restart remained in the database after the containers were recreated, confirming that PostgreSQL data persistence is working through the Docker volume.
+
+## Repository Update
+
+The original repository was replaced with a clean FastAPI CRUD implementation using PostgreSQL and Docker.
+
+Key updates include:
+
+* FastAPI REST API implementation.
+* PostgreSQL database running in Docker.
+* Docker Compose orchestration for application and database services.
+* Automatic database initialization and seed data.
+* Database connection retry logic to handle container startup order.
+* Persistent PostgreSQL storage using a named Docker volume.
+* Environment-variable-based configuration using `.env`.
